@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Oahu</title>
+  <%= stylesheet_link_tag    "application" %>
+  <%= javascript_include_tag "application" %>
+  <%= csrf_meta_tags %>
+  <%= yield :head %>
+
+<style>
+  #message-box {
+		padding: 0.5em;
+		border: solid black 1px;
+		color: red;
+		width: 40%;
+		margin: auto;
+		font-size: larger;
+		margin-top: 1em;
+		background-color: #eee;
+  }
+</style>
+
+</head>
+<body>
+	
+	<% unless flash.empty? %>
+	 <div id="message-box">
+	    <% flash.each do |name, msg| %>
+	      <%= content_tag :div, msg, :id => "flash_#{name}" %>
+	    <% end %>
+	  </div>
+	<% end %>
+	
+<%= yield %>
+
+</body>
+</html>

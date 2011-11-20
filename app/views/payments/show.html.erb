@@ -1,0 +1,15 @@
+<% content_for :head do %>
+<style>
+  a {
+	  font-size: larger;
+	  background-color: #bcb;
+  }
+</style>
+<% end %>
+
+<p id="notice"><%= notice %></p>
+<%= link_to 'Back', payments_path %>
+
+<%= debug @payment.details %>
+
+<%= link_to 'Back', payments_path %>

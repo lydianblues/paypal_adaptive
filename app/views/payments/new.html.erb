@@ -1,0 +1,32 @@
+<h1>New payment</h1>
+
+<% content_for :head do %>
+  <script src="https://www.paypalobjects.com/js/external/dg.js">
+  </script>
+
+	<script>
+		$(document).ready(function(){
+			var dgFlow = new PAYPAL.apps.DGFlow({ trigger: 'submitBtn' });
+		});
+	</script>
+	
+<% end %>
+
+<!--
+on pages for the return and cancel URL's include this: 
+dgFlow = top.dgFlow || top.opener.top.dgFlow; dgFlow.closeFlow();
+top.close();
+-->
+
+<form action= "https://www.sandbox.paypal.com/webapps/adaptivepayment/flow/pay" target="PPDGFrame">
+	<input id="type" type="hidden" name="expType" value="light">
+	<input id="paykey" type="hidden" name="paykey" value=<%= @paykey %>>
+	<% if @preapprovalkey %>
+	  <input id="preapprovalkey" type="hidden" name="preapprovalkey" value=<%= @preapprovalkey %>>
+  <% end %>
+	<input type="submit" id="submitBtn" value="Pay with PayPal">
+</form>
+
+<%= render 'form' %>
+
+<%= link_to 'Back', payments_path %>

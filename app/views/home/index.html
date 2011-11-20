@@ -1,0 +1,15 @@
+<% content_for :head do %>
+	<title>"Home Page"</title>
+	
+	<script src="https://www.paypalobjects.com/js/external/dg.js">
+  </script>
+  
+	<script>
+		$(document).ready(function(){
+		 	dgFlow = top.dgFlow || top.opener.top.dgFlow; dgFlow.closeFlow();
+			top.close();
+	  });
+	</script>
+
+<% end %>
+<h1> The home page </h1>
