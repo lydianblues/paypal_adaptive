@@ -14,9 +14,10 @@
 ActiveRecord::Schema.define(:version => 20111117020736) do
 
   create_table "payments", :force => true do |t|
-    t.integer  "scenario"
+    t.string   "scenario"
     t.string   "paykey"
-    t.string   "amount"
+    t.string   "preapproval_key"
+    t.integer  "amount"
     t.string   "correlation_id"
     t.string   "status"
     t.string   "sender_email"

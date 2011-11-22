@@ -1,4 +1,14 @@
+require 'paypal/adaptive_payments'
+
+#
+# In this file, the various methods are wrappers for PayPal methods.
+# The wrappers are needed because they can get and set the state of
+# the model.  The PayPal methods don't reference a Payment model 
+# instance.
+#
 class Payment < ActiveRecord::Base
+  
+  include Paypal::AdaptivePayments
   
   before_create :init_payment
   
@@ -7,91 +17,47 @@ class Payment < ActiveRecord::Base
   
   serialize :details
   
-  def get_payment_key(stu_amt = nil, kira_amt = nil, store_amt = nil)
-    stu = "0.00"
-    kira = "0.00"
-    store = "0.00"
-    stu = stu_amt.to_money.format(:symbol => false) unless stu_amt.blank?
-    kira = kira_amt.to_money.format(:symbol => false) unless kira_amt.blank?
-    store = store_amt.to_money.format(:symbol => false) unless store_amt.blank?
-  
-    doc = case scenario
-    when 1 then {
-      returnUrl: "http://127.0.0.1:3000",
-      requestEnvelope: {errorLanguage: "en_US"},
-      currencyCode: "USD",
-      receiverList: {
-        receiver: [
-          {email: "stu_1321493496_per@thirdmode.com", amount: stu},
-          {email: "kira_1321493810_per@thirdmode.com", amount: kira},
-          {email: "store_1233166355_biz@thirdmode.com", amount: store}
-        ]
-      },
-      cancelUrl: "http://127.0.0.1:3000",
-      actionType: "PAY",
-      # senderEmail: "buyer_1233697850_per@thirdmode.com", --causes embedded flow to fail
-      trackingId: tracking_id
-    }
-    when 2 then
-    {
-      returnUrl: "http://127.0.0.1:3000", 
-      requestEnvelope: {errorLanguage: "en_US"},
-      currencyCode: "USD",  
-      receiverList: {
-        receiver: [
-          {email: "stu_1321493496_per@thirdmode.com", amount: stu, primary: "false"},
-          {email: "kira_1321493810_per@thirdmode.com", amount: kira, primary: "false"},
-          {email: "store_1233166355_biz@thirdmode.com", amount: store, primary: "true"}
-        ]
-      },
-      cancelUrl: "http://127.0.0.1:3000", 
-      actionType: "PAY",
-      # senderEmail: "buyer_1233697850_per@thirdmode.com", -- causes embedded flow to fail
-      trackingId: tracking_id
-    } 
-    else
-      raise "Invalid Scenario"
-    end
-  
-    pay_request = PaypalAdaptive::Request.new("test")
-    pay_request.pay(doc) # return PayPal response
+  # Simple, parallel, or chained payments.
+  def pay(receivers)
+    paypal_pay(receivers)
   end
   
-  def get_payment_details
-    doc = {
-      trackingId: tracking_id,
-      requestEnvelope: {
-        errorLanguage: "en_US"
-      }
-    }
-    @pay_request = PaypalAdaptive::Request.new("test")
-    pp_response = @pay_request.payment_details(doc)
-    logger.info pp_response.to_yaml
-    if (pp_response.success?)
-      status = pp_response["status"]
-      ts =  pp_response["responseEnvelope"]["timestamp"]
-      email = pp_response["senderEmail"]
-      timestamp = Time.parse(ts)
-      paykey = pp_response["payKey"]
-      cid = pp_response["responseEnvelope"]["correlationId"]
-      raise pp_response.to_yaml if status.blank?
-      
-      total = 0.0
-      pp_response["paymentInfoList"]["paymentInfo"].each do |pi|
-        amt = pi["receiver"]["amount"].to_f
-        if pi["receiver"]["primary"] == "true"
-          total = amt
-          break
-        end
-        total += amt
-      end
-      total = total.to_money.format
-      update_attributes!(timestamp: timestamp, status: status, amount: total,
-        sender_email: email, paykey: paykey, correlation_id: cid,
-        details: pp_response)
-    else
-      raise "PaymentDetails failed: #{error_message(pp_response)}"
+  def preapproval(start_date = DateTime.now, end_date = DateTime.now + 1,
+    max_total = '100.00', max_payments = 1, currency = "USD")
+    response = paypal_preapproval(start_date, end_date, max_total,
+      max_payments, currency)
+    if response.success?
+      update_attributes!(preapproval_key: response["preapprovalKey"])
     end
+    response
+  end
+  
+  def preapproval_details(include_billing_address = false)
+    paypal_preapproval_details(preapproval_key, include_billing_address)
+  end
+  
+  def cancel_preapproval
+    
+  end
+  
+  def confirm_preapproval
+    
+  end
+  
+  def payment_details
+    paypal_payment_details(tracking_id)
+  end
+  
+  def set_payment_options(receiver)
+    paypal_set_payment_options(paykey, receiver)
+  end
+  
+  def get_payment_options
+    paypal_get_payment_options(paykey)
+  end
+   
+  def get_shipping_addresses
+    paypal_get_shipping_addresses(paykey)
   end
   
   def init_payment
@@ -101,8 +67,5 @@ class Payment < ActiveRecord::Base
     self.tracking_id = rng.rand(10**11..10**12 - 1)
   end
   
-  def error_message(resp)
-    msg = resp["error"][0]["message"]
-  end
   
 end

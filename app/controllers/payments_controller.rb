@@ -1,12 +1,17 @@
+require 'payment_scenarios'
+
 class PaymentsController < ApplicationController
   # GET /payments
   # GET /payments.json
   def index
-    @payments = Payment.order('timestamp DESC').limit(20)
+    @payments = Payment.order('timestamp DESC').limit(30)
     @embedded_flow = false
     
     @payments.each do |pmt|
-      pmt.get_payment_details if pmt["status"].blank? || (pmt["status"] == 'CREATED')
+      # pmt.payment_details if pmt["status"].blank? || (pmt["status"] == 'CREATED')
+      # N.B. preapprovals also are getting a payment record.  Do we want to do this?
+      # Also the trackingId, when sent to PayPal will then generate an 
+      #"invalidTrackingId" error.
     end
     
     respond_to do |format|
@@ -45,29 +50,36 @@ class PaymentsController < ApplicationController
   # POST /payments
   # POST /payments.json
   def create
-    
-    # Create a new Payment record and store it in the database.
-    @payment = Payment.create!(scenario: params["scenario"])
-    
-    # Contact PayPal and get a payment key for the given values in the
-    # given scenario.
-    pp_response = @payment.get_payment_key(params["stu"], params["kira"],
-      params["store"])
-    
-    if pp_response.success?
-      @payments
-      @embedded_flow = !params["embedded_flow"].blank?
-      if @embedded_flow
-        @payments = Payment.order('timestamp DESC').limit(20)
-        @paykey = pp_response["payKey"]
-        render :action => :index
+   
+    scenario = params["scenario"] 
+    begin
+      klass = "PaymentScenarios/#{scenario}".camelize.constantize.new(params)
+  
+      # Create a new Payment record and store it in the database.
+      @payment = Payment.create!(scenario: scenario)
+      
+      response = klass.run(@payment)
+      
+      if response.success?
+        @embedded_flow = !params["embedded_flow"].blank?
+        if @embedded_flow
+          @payments = Payment.order('timestamp DESC').limit(30)
+          @paykey = response["payKey"]
+          render :action => :index
+        elsif response.approve_paypal_payment_url
+          redirect_to response.approve_paypal_payment_url
+        else
+          redirect_to payments_path
+        end
       else
-        redirect_to pp_response.approve_paypal_payment_url
+        raise response["error"][0]["message"]
       end
-    else
-      msg = pp_response["error"][0]["message"]
+    rescue Exception => e
+      Payment.delete(@payment.id) if @payment
+      raise
+      msg = e.message
       flash[:error] = msg
-      @payments = Payment.order('timestamp DESC').limit(20)
+      @payments = Payment.order('timestamp DESC').limit(30)
       render :action => :index
     end
 

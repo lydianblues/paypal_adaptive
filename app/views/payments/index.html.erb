@@ -2,7 +2,7 @@
   <style>
     .form-contents {
 	    padding: 1em 1em 0.5em;
-	    width: 25em;
+	    width: 26em;
 	    overflow:auto;
 	    border: 1px solid black;
     }
@@ -77,31 +77,56 @@
 
 <% end %>
 
-<form action= "https://www.sandbox.paypal.com/webapps/adaptivepayment/flow/pay"
-  target="PPDGFrame">
-  <input id="type" type="hidden" name="expType" value="light">
-  <input id="paykey" type="hidden" name="paykey" value="<%= @paykey %>">
-  <% if @preapprovalkey %>
-    <input id="preapprovalkey" type="hidden" name="preapprovalkey"
-      value="<%= @preapprovalkey %>">
-  <% end %>
-  <input type="submit" id="submitBtn" value="Pay with PayPal">
-</form>
+<% if @embedded_flow %>
+	<form action= "https://www.sandbox.paypal.com/webapps/adaptivepayment/flow/pay"
+	  target="PPDGFrame">
+	  <input id="type" type="hidden" name="expType" value="light">
+	  <input id="paykey" type="hidden" name="paykey" value="<%= @paykey %>">
+	  <% if @preapprovalkey %>
+	    <input id="preapprovalkey" type="hidden" name="preapprovalkey"
+	      value="<%= @preapprovalkey %>">
+	  <% end %>
+	  <input type="submit" id="submitBtn" value="Pay with PayPal">
+	</form>
+<% end %>
 
 <h1>Payment Scenarios</h1>
 Here are some sample scenarios to demonstrate the use of PayPal Adaptive Payments.
-<h2>Parallel Payments</h2>
+<h2>Simple Payment</h2>
 <div class="explanation">
-Send parallel payments to Stu, Kira, and the store.  Fill in any dollar amount
-for each that is less than $100.00. You will be redirected to PayPal as a buyer.
+Send a payment to Stu.  Fill in any dollar amount
+that is less than $100.00. You will be redirected to PayPal as a payer.
 Log in to PayPal with the password <b>233697837</b> to approve or cancel the 
 purchase.
 </div>
 <%= form_tag payments_path do -%>
 	<div class="form-contents">
 		<div>
-			<%= hidden_field_tag "scenario", "1" %>
-			
+			<%= hidden_field_tag "scenario", "SimplePayment" %>
+			<%= hidden_field_tag "embedded_flow", "1" %>
+			<%= label_tag 'stu', "Amount to send to Stu: " %>
+			<%= text_field_tag 'stu', "$10.00" %>
+		</div>
+		<div id="submit-container">
+			<%= submit_tag 'Make Payment' %>
+		</div>
+		
+	</div>
+<% end -%>
+
+
+<h2>Parallel Payments</h2>
+<div class="explanation">
+Send parallel payments to Stu, Kira, and the store.  Fill in any dollar amount
+for each that is less than $100.00. You will be redirected to PayPal as a payer.
+Log in to PayPal with the password <b>233697837</b> to approve or cancel the 
+purchase.
+</div>
+<%= form_tag payments_path do -%>
+	<div class="form-contents">
+		<div>
+			<%= hidden_field_tag "scenario", "ParallelPayments" %>
+			<%= hidden_field_tag "embedded_flow", "1" %>
 			<%= label_tag 'stu', "Amount to send to Stu: " %>
 			<%= text_field_tag 'stu', "$10.00" %>
 		</div>
@@ -128,14 +153,14 @@ store should be a small amount, say $2.00, greater than the sum of the
 payments for Stu and Kira.  In a real application, the amounts paid to
 Stu and Kira would be hidden.  The payer can only see one payment -- the
 one to the store.
-You will be redirected to PayPal as a buyer.
+You will be redirected to PayPal as a payer.
 Log in to PayPal with the password <b>233697837</b> to approve or cancel the 
 purchase.
 </div>
 <%= form_tag payments_path do -%>
 	<div class="form-contents">
 		<div>
-			<%= hidden_field_tag "scenario", "2" %>
+			<%= hidden_field_tag "scenario", "ChainedPayments" %>
 			<%= label_tag 'stu', "Amount to send to Stu: " %>
 			<%= text_field_tag 'stu', "$10.00" %>
 		</div>
@@ -151,6 +176,48 @@ purchase.
 			<%= submit_tag 'Make Payments' %>
 		</div>
 		
+	</div>
+<% end -%>
+
+<h2>Simple Payment with Preapproval</h2>
+<div class="explanation">
+Preapprove a payment to the store. Fill in any dollar amount
+that is less than $100.00. You will be redirected to PayPal to complete
+the preapproval. Log in with the password <b>233697837</b> to accept or
+cancel the preapproval.	
+</div>
+<%= form_tag payments_path do -%>
+	<div class="form-contents">
+		<div>
+			<%= hidden_field_tag "scenario", "Preapproval" %>
+			<div>
+				<%= label_tag 'store', "Amount to Preapprove: " %>
+			  <%= text_field_tag 'store', "$10.00" %>
+			</div>
+			<div>
+			  <%= label_tag 'max_payments', "Max number of Payments: " %>
+			  <%= text_field_tag 'max_payments', "1" %>
+			</div>
+			<div>
+			  <%= label_tag 'max_total', "Max Total of all Payments: " %>
+			  <%= text_field_tag 'max_total', "$10.00" %>
+			</div>
+			<div>
+				<% start_date = DateTime.now %>
+				<% end_date = start_date + 1%>
+				<div>
+					<%= label_tag 'start_date', "Start Date:" %><br/>
+					<%= select_datetime start_date, :prefix => "start_date" %>
+				</div>
+				<div>
+					<%= label_tag 'end_date', "End Date:" %><br/>
+					<%= select_datetime end_date, :prefix => "end_date" %>
+				</div>
+			</div>
+		</div>
+		<div id="submit-container">
+			<%= submit_tag 'Preapprove' %>
+		</div>
 	</div>
 <% end -%>
 
@@ -175,7 +242,7 @@ purchase.
 			  <td><%= payment.id %></td>
 				<td><%= payment.scenario %></td>
 		    <td><%= payment.sender_email %></td>
-		    <td><%= payment.amount %></td>
+		    <td><%= cents_to_currency(payment.amount) %></td>
 		    <td><%= payment.status %></td>
 		    <td><%= payment.timestamp %></td>
 				<td><%= payment.paykey %></td>
