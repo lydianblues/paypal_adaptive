@@ -20,12 +20,16 @@ class Payment < ActiveRecord::Base
   # Simple, parallel, or chained payments.
   def pay(receivers)
     paypal_pay(receivers)
+    # Don't update the attributes here.  Let the IPN do it.
   end
   
-  def preapproval(start_date = DateTime.now, end_date = DateTime.now + 1,
-    max_total = '100.00', max_payments = 1, currency = "USD")
-    response = paypal_preapproval(start_date, end_date, max_total,
-      max_payments, currency)
+  def preapproval(start_date = DateTime.now, end_date = DateTime.now + 1.day,
+    max_per_payment = '50.00', max_total_payments = '100.00',
+    max_num_payments = 1, currency = "USD")
+    
+    response = paypal_preapproval(start_date, end_date, max_per_payment,
+      max_total_payments, max_num_payments, currency)
+      
     if response.success?
       update_attributes!(preapproval_key: response["preapprovalKey"])
     end
@@ -33,7 +37,8 @@ class Payment < ActiveRecord::Base
   end
   
   def preapproval_details(include_billing_address = false)
-    paypal_preapproval_details(preapproval_key, include_billing_address)
+    response = paypal_preapproval_details(preapproval_key, include_billing_address)
+    update_attributes!(details: response)
   end
   
   def cancel_preapproval
@@ -45,7 +50,15 @@ class Payment < ActiveRecord::Base
   end
   
   def payment_details
-    paypal_payment_details(tracking_id)
+    response = paypal_payment_details(tracking_id)
+    update_attributes!(
+      timestamp: response.timestamp,
+      status: response.status,
+      amount: response.cents,
+      sender_email: response.email,
+      paykey: response.paykey,
+      correlation_id: response.correlation_id,
+      details: response)
   end
   
   def set_payment_options(receiver)

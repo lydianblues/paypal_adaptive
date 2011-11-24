@@ -8,10 +8,13 @@ class PaymentsController < ApplicationController
     @embedded_flow = false
     
     @payments.each do |pmt|
-      # pmt.payment_details if pmt["status"].blank? || (pmt["status"] == 'CREATED')
-      # N.B. preapprovals also are getting a payment record.  Do we want to do this?
-      # Also the trackingId, when sent to PayPal will then generate an 
-      #"invalidTrackingId" error.
+      if (pmt[:status].blank? || (pmt[:status] == 'CREATED')) &&
+        (pmt[:scenario] == 'Payment')
+         pmt.payment_details 
+      end
+      if pmt[:scenario] == "Preapproval" && pmt[:details].blank?
+        pmt.preapproval_details
+      end
     end
     
     respond_to do |format|
@@ -51,14 +54,18 @@ class PaymentsController < ApplicationController
   # POST /payments.json
   def create
    
-    scenario = params["scenario"] 
+    scenario_name = params["scenario"] 
     begin
-      klass = "PaymentScenarios/#{scenario}".camelize.constantize.new(params)
+      scenario = "PaymentScenarios/#{scenario_name}"
+        .camelize.constantize.new(params)
   
       # Create a new Payment record and store it in the database.
-      @payment = Payment.create!(scenario: scenario)
+      @payment = Payment.create!(scenario: scenario_name)
+      response = scenario.run(@payment)
       
-      response = klass.run(@payment)
+      # What about the case where we are paying based up a preapproval?
+      # In this case we're already done!  No need to do anything except
+      # render the index view. XXX
       
       if response.success?
         @embedded_flow = !params["embedded_flow"].blank?
@@ -66,8 +73,10 @@ class PaymentsController < ApplicationController
           @payments = Payment.order('timestamp DESC').limit(30)
           @paykey = response["payKey"]
           render :action => :index
-        elsif response.approve_paypal_payment_url
-          redirect_to response.approve_paypal_payment_url
+        elsif response.approve_url
+          redirect_to response.approve_url
+        elsif response.preapprove_url
+          redirect_to response.preapprove_url
         else
           redirect_to payments_path
         end
@@ -76,7 +85,7 @@ class PaymentsController < ApplicationController
       end
     rescue Exception => e
       Payment.delete(@payment.id) if @payment
-      raise
+      raise 
       msg = e.message
       flash[:error] = msg
       @payments = Payment.order('timestamp DESC').limit(30)

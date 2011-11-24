@@ -70,17 +70,19 @@ module Paypal
     #   start_date = DateTime.now
     #   end_date = (DateTime.now + 1)
     #
-    def paypal_preapproval(start_date, end_date, max_total,
-      max_payments, currency)
+    def paypal_preapproval(start_date, end_date, max_per_payment,
+      max_total_payments, max_num_payments, currency)
       doc = {
         returnUrl: "http://127.0.0.1:3000/payments",
         requestEnvelope: {errorLanguage: "en_US"},
         currencyCode: currency, 
         cancelUrl: "http://127.0.0.1:3000/payments",
-        maxTotalAmountOfAllPayments: max_total,
-        maxNumberOfPayments: max_payments,
+        maxTotalAmountOfAllPayments: max_total_payments,
+        maxAmountPerPayment: max_per_payment,
+        maxNumberOfPayments: max_num_payments,
         startingDate: start_date.strftime("%FT%T%:z"),
-        endingDate: end_date.strftime("%FT%T%:z")
+        endingDate: end_date.strftime("%FT%T%:z"),
+        displayMaxTotalAmount: "true"
       }
       request = PaypalAdaptive::Request.new("test")
       request.preapproval(doc) # return PayPal response
@@ -102,7 +104,7 @@ module Paypal
     #  {email: "kira_1321493810_per@thirdmode.com", amount: kira, primary: false},
     #  {email: "store_1233166355_biz@thirdmode.com", amount: store, primary: true}
     # ]
-    def paypal_pay(receivers)     
+    def paypal_pay(receivers, preapproval_key = nil)     
       doc = {
         returnUrl: "http://127.0.0.1:3000/payments",
         requestEnvelope: {errorLanguage: "en_US"},
@@ -115,6 +117,9 @@ module Paypal
         # senderEmail: "buyer_1233697850_per@thirdmode.com", --causes embedded flow to fail
         trackingId: tracking_id
       }
+      preapproval_key = "PA-2R394266SU543461B"
+      doc.merge!(preapprovalKey: preapproval_key) if preapproval_key
+      
       request = PaypalAdaptive::Request.new("test")
       request.pay(doc) # return PayPal response
     end
@@ -126,42 +131,8 @@ module Paypal
           errorLanguage: "en_US"
         }
       }
-      @pay_request = PaypalAdaptive::Request.new("test")
-      pp_response = @pay_request.payment_details(doc)
-      logger.info pp_response.to_yaml
-      if (pp_response.success?)
-        status = pp_response["status"]
-        ts =  pp_response["responseEnvelope"]["timestamp"]
-        email = pp_response["senderEmail"]
-        timestamp = Time.parse(ts)
-        paykey = pp_response["payKey"]
-        cid = pp_response["responseEnvelope"]["correlationId"]
-        raise pp_response.to_yaml if status.blank?
-
-        cents = 0
-        pp_response["paymentInfoList"]["paymentInfo"].each do |pi|
-          amt = MoneyUtils.paypal_to_cents(pi["receiver"]["amount"])
-          if pi["receiver"]["primary"] == "true"
-            cents = amt
-            break
-          end
-          cents += amt
-        end
-
-        update_attributes!(timestamp: timestamp, status: status, amount: cents,
-          sender_email: email, paykey: paykey, correlation_id: cid,
-          details: pp_response)
-      else
-        raise "paypal_payment_details failed: #{error_message(pp_response)}"
-      end
+      request = PaypalAdaptive::Request.new("test")
+      request.payment_details(doc)
     end
-         
-    private
-    
-    def error_message(resp)
-      msg = resp["error"][0]["message"]
-    end
-    
-    
   end
 end

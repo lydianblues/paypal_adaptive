@@ -92,41 +92,19 @@
 
 <h1>Payment Scenarios</h1>
 Here are some sample scenarios to demonstrate the use of PayPal Adaptive Payments.
-<h2>Simple Payment</h2>
+
+<h2>Simple or Parallel Payments</h2>
 <div class="explanation">
-Send a payment to Stu.  Fill in any dollar amount
-that is less than $100.00. You will be redirected to PayPal as a payer.
-Log in to PayPal with the password <b>233697837</b> to approve or cancel the 
-purchase.
+Fill in one amount box to send a simple payment to <i>Stu</i>, <i>Kira</i>,
+or the <i>Store</i>, or fill amounts in more than one box to send parallel
+payments. You will be redirected to PayPal as a payer. You should make sure
+that you are logged in as <i>buyer_1233697850_per@thirdmode.com</i> with the
+password <i>233697837</i>.  You may then approve or cancel the payments.
 </div>
 <%= form_tag payments_path do -%>
 	<div class="form-contents">
 		<div>
-			<%= hidden_field_tag "scenario", "SimplePayment" %>
-			<%= hidden_field_tag "embedded_flow", "1" %>
-			<%= label_tag 'stu', "Amount to send to Stu: " %>
-			<%= text_field_tag 'stu', "$10.00" %>
-		</div>
-		<div id="submit-container">
-			<%= submit_tag 'Make Payment' %>
-		</div>
-		
-	</div>
-<% end -%>
-
-
-<h2>Parallel Payments</h2>
-<div class="explanation">
-Send parallel payments to Stu, Kira, and the store.  Fill in any dollar amount
-for each that is less than $100.00. You will be redirected to PayPal as a payer.
-Log in to PayPal with the password <b>233697837</b> to approve or cancel the 
-purchase.
-</div>
-<%= form_tag payments_path do -%>
-	<div class="form-contents">
-		<div>
-			<%= hidden_field_tag "scenario", "ParallelPayments" %>
-			<%= hidden_field_tag "embedded_flow", "1" %>
+			<%= hidden_field_tag "scenario", "Payment" %>
 			<%= label_tag 'stu', "Amount to send to Stu: " %>
 			<%= text_field_tag 'stu', "$10.00" %>
 		</div>
@@ -160,7 +138,8 @@ purchase.
 <%= form_tag payments_path do -%>
 	<div class="form-contents">
 		<div>
-			<%= hidden_field_tag "scenario", "ChainedPayments" %>
+			<%= hidden_field_tag "scenario", "Payment" %>
+			<%= hidden_field_tag "chained", "true" %>
 			<%= label_tag 'stu', "Amount to send to Stu: " %>
 			<%= text_field_tag 'stu', "$10.00" %>
 		</div>
@@ -191,33 +170,47 @@ cancel the preapproval.
 		<div>
 			<%= hidden_field_tag "scenario", "Preapproval" %>
 			<div>
-				<%= label_tag 'store', "Amount to Preapprove: " %>
-			  <%= text_field_tag 'store', "$10.00" %>
+			  <%= label_tag 'max_num_payments', "Max Number of Payments: " %>
+			  <%= text_field_tag 'max_num_payments', "1" %>
 			</div>
 			<div>
-			  <%= label_tag 'max_payments', "Max number of Payments: " %>
-			  <%= text_field_tag 'max_payments', "1" %>
+			  <%= label_tag 'max_total_payments', "Max Total of all Payments: " %>
+			  <%= text_field_tag 'max_total_payments', "$100.00" %>
 			</div>
 			<div>
-			  <%= label_tag 'max_total', "Max Total of all Payments: " %>
-			  <%= text_field_tag 'max_total', "$10.00" %>
+			  <%= label_tag 'max_per_payment', "Max Per Payment: " %>
+			  <%= text_field_tag 'max_per_payment', "$10.00" %>
 			</div>
 			<div>
 				<% start_date = DateTime.now %>
 				<% end_date = start_date + 1%>
 				<div>
 					<%= label_tag 'start_date', "Start Date:" %><br/>
-					<%= select_datetime start_date, :prefix => "start_date" %>
+					<%= select_datetime(start_date, prefix: "start_date",
+						start_year: 2011, end_year: 2020)  %>
 				</div>
 				<div>
 					<%= label_tag 'end_date', "End Date:" %><br/>
-					<%= select_datetime end_date, :prefix => "end_date" %>
+					<%= select_datetime end_date, prefix: "end_date",
+						start_year: 2011, end_year: 2020 %>
 				</div>
 			</div>
 		</div>
 		<div id="submit-container">
 			<%= submit_tag 'Preapprove' %>
 		</div>
+	</div>
+<% end -%>
+<%= form_tag payments_path do -%>
+	<div class="form-contents">
+		<div>
+			<%= hidden_field_tag "scenario", "Payment" %>
+			<%= label_tag 'stu', "Amount to send to Store: " %>
+			<%= text_field_tag 'store', "$10.00" %>
+		</div>
+		<div id="submit-container">
+			<%= submit_tag 'Make Payment' %>
+		</div>	
 	</div>
 <% end -%>
 
