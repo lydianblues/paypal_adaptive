@@ -1,26 +1,36 @@
 <% content_for :head do %>
   <style>
-    .form-contents {
+	  section {
+		  clear: left;
+		  overflow: auto;
+		  margin-top: 1em;
+	  }
+		#double-forms {
+			width: 58em;
+		}
+    .form-wrapper {
 	    padding: 1em 1em 0.5em;
 	    width: 26em;
 	    overflow:auto;
 	    border: 1px solid black;
+	    float:left;
     }
 
-		.form-contents div {
+		.form-wrapper div {
 			background-color: #ddd;
 			overflow: auto;
 			margin-bottom: 0.5em;
 			width: 100%;
 		}
 		
-		.form-contents div label {
+		.form-wrapper div label {
 			float:left;
 		}
-		.form-contents div input {
+		.form-wrapper div input {
 			float:right;
 		}
-		.form-contents div input[type="submit"] {
+		
+		.form-wrapper div input[type="submit"] {
       float: none;
 			margin-left: 11em;
 			width: 10em;
@@ -30,12 +40,15 @@
 			clear: both;
 		}
 		.explanation {
-			width: 50%;
+			width: 57em;
 			border: 1px solid black;
 			padding: 0.5em;
 			margin-bottom: 1em;
+			clear: left;
 		}
-		
+		#payments-table {
+			margin-bottom:2em;
+		}
 		table.payments {
 			border-width: 1px;
 			border-spacing: 2px;
@@ -93,6 +106,7 @@
 <h1>Payment Scenarios</h1>
 Here are some sample scenarios to demonstrate the use of PayPal Adaptive Payments.
 
+<section>
 <h2>Simple or Parallel Payments</h2>
 <div class="explanation">
 Fill in one amount box to send a simple payment to <i>Stu</i>, <i>Kira</i>,
@@ -101,149 +115,170 @@ payments. You will be redirected to PayPal as a payer. You should make sure
 that you are logged in as <i>buyer_1233697850_per@thirdmode.com</i> with the
 password <i>233697837</i>.  You may then approve or cancel the payments.
 </div>
-<%= form_tag payments_path do -%>
-	<div class="form-contents">
-		<div>
-			<%= hidden_field_tag "scenario", "Payment" %>
-			<%= label_tag 'stu', "Amount to send to Stu: " %>
-			<%= text_field_tag 'stu', "$10.00" %>
-		</div>
-		<div>
-			<%= label_tag 'kira', "Amount to send to Kira:  " %>
-			<%= text_field_tag 'kira', "$8.00" %>
-		</div>
-		<div>
-			<%= label_tag 'store', "Amount to send to Store: " %>
-			<%= text_field_tag 'store', "$2.00" %>
-		</div>
-		<div id="submit-container">
-			<%= submit_tag 'Make Payments' %>
-		</div>
-		
-	</div>
-<% end -%>
-
-<h2>Chained Payments</h2>
-<div class="explanation">
-Send chained payments to Stu, Kira via the store.  Fill in any dollar amount
-for Stu and Kira that is less than $100.00 for each. The amount for the
-store should be a small amount, say $2.00, greater than the sum of the
-payments for Stu and Kira.  In a real application, the amounts paid to
-Stu and Kira would be hidden.  The payer can only see one payment -- the
-one to the store.
-You will be redirected to PayPal as a payer.
-Log in to PayPal with the password <b>233697837</b> to approve or cancel the 
-purchase.
+<div class="form-wrapper">
+	<%= form_tag payments_path do -%>
+			<div>
+				<%= hidden_field_tag "scenario", "Payment" %>
+				<%= label_tag 'stu', "Amount to send to Stu: " %>
+				<%= text_field_tag 'stu', "$10.00" %>
+			</div>
+			<div>
+				<%= label_tag 'kira', "Amount to send to Kira:  " %>
+				<%= text_field_tag 'kira', "$8.00" %>
+			</div>
+			<div>
+				<%= label_tag 'store', "Amount to send to Store: " %>
+				<%= text_field_tag 'store', "$2.00" %>
+			</div>
+			<div id="submit-container">
+				<%= submit_tag 'Make Payments' %>
+			</div>
+	<% end -%>
 </div>
-<%= form_tag payments_path do -%>
-	<div class="form-contents">
-		<div>
-			<%= hidden_field_tag "scenario", "Payment" %>
-			<%= hidden_field_tag "chained", "true" %>
-			<%= label_tag 'stu', "Amount to send to Stu: " %>
-			<%= text_field_tag 'stu', "$10.00" %>
-		</div>
-		<div>
-			<%= label_tag 'kira', "Amount to send to Kira:  " %>
-			<%= text_field_tag 'kira', "$8.00" %>
-		</div>
-		<div>
-			<%= label_tag 'store', "Amount to send to Store: " %>
-			<%= text_field_tag 'store', "$20.00" %>
-		</div>
-		<div id="submit-container">
-			<%= submit_tag 'Make Payments' %>
-		</div>
-		
-	</div>
-<% end -%>
+</section>
 
-<h2>Simple Payment with Preapproval</h2>
-<div class="explanation">
+<section>
+	<h2>Chained Payments</h2>
+	<div class="explanation">
+	Send chained payments to Stu, Kira via the store.  Fill in any dollar amount
+	for Stu and Kira that is less than $100.00 for each. The amount for the
+	store should be a small amount, say $2.00, greater than the sum of the
+	payments for Stu and Kira.  In a real application, the amounts paid to
+	Stu and Kira would be hidden.  The payer can only see one payment -- the
+	one to the store.
+	You will be redirected to PayPal as a payer.
+	Log in to PayPal with the password <b>233697837</b> to approve or cancel the 
+	purchase.
+	</div>
+	<div class="form-wrapper">
+	  <%= form_tag payments_path do -%>
+			<div>
+				<%= hidden_field_tag "scenario", "Payment" %>
+				<%= hidden_field_tag "chained", "true" %>
+				<%= label_tag 'stu', "Amount to send to Stu: " %>
+				<%= text_field_tag 'stu', "$10.00" %>
+			</div>
+			<div>
+				<%= label_tag 'kira', "Amount to send to Kira:  " %>
+				<%= text_field_tag 'kira', "$8.00" %>
+			</div>
+			<div>
+				<%= label_tag 'store', "Amount to send to Store: " %>
+				<%= text_field_tag 'store', "$20.00" %>
+			</div>
+			<div id="submit-container">
+				<%= submit_tag 'Make Payments' %>
+			</div>
+	  <% end -%>
+	</div>
+</section>
+
+<section>
+	<h2>Simple Payment with Preapproval</h2>
+	<div class="explanation">
 Preapprove a payment to the store. Fill in any dollar amount
 that is less than $100.00. You will be redirected to PayPal to complete
 the preapproval. Log in with the password <b>233697837</b> to accept or
 cancel the preapproval.	
-</div>
-<%= form_tag payments_path do -%>
-	<div class="form-contents">
-		<div>
-			<%= hidden_field_tag "scenario", "Preapproval" %>
-			<div>
-			  <%= label_tag 'max_num_payments', "Max Number of Payments: " %>
-			  <%= text_field_tag 'max_num_payments', "1" %>
-			</div>
-			<div>
-			  <%= label_tag 'max_total_payments', "Max Total of all Payments: " %>
-			  <%= text_field_tag 'max_total_payments', "$100.00" %>
-			</div>
-			<div>
-			  <%= label_tag 'max_per_payment', "Max Per Payment: " %>
-			  <%= text_field_tag 'max_per_payment', "$10.00" %>
-			</div>
-			<div>
+	</div>
+	<div id="double-forms">
+	  <div class="form-wrapper">
+		  <%= form_tag payments_path do -%>
+				<%= hidden_field_tag "payment[scenario]", "Preapproval" %>
+				<div>
+				  <%= label_tag 'payment[max_num_payments]', "Max Number of Payments: " %>
+				  <%= text_field_tag 'payment[max_num_payments]', "1" %>
+				</div>
+				<div>
+				  <%= label_tag 'payment[max_total_payments]', "Max Total of all Payments: " %>
+				  <%= text_field_tag 'payment[max_total_payments]', "$100.00" %>
+				</div>
+				<div>
+				  <%= label_tag 'payment[max_per_payment]', "Max Per Payment: " %>
+				  <%= text_field_tag 'payment[max_per_payment]', "$10.00" %>
+				</div>
+				<div>
+					<% pay_periods = %w(NO_PERIOD_SPECIFIED DAILY WEEKLY BIWEEKLY
+			      SEMIMONTHLY MONTHLY ANNUALLY) %>
+			    <section style="float:left;">
+				    <%= label_tag 'payment[payment_period]', "Payment Period: " %>
+				  </section>
+					<section style="float:right;">
+				    <%= select_tag 'payment[payment_period]',
+				      options_from_collection_for_select(pay_periods, :to_s, :to_s) %>
+				   </section>
+				</div>
+				<div>
+				  <%= label_tag 'payment[max_payments_per_period]', "Max Pmts Per Period: " %>
+				  <%= text_field_tag 'payment[max_payments_per_period]', "1" %>
+				</div>
+		
 				<% start_date = DateTime.now %>
 				<% end_date = start_date + 1%>
 				<div>
-					<%= label_tag 'start_date', "Start Date:" %><br/>
-					<%= select_datetime(start_date, prefix: "start_date",
-						start_year: 2011, end_year: 2020)  %>
+				  <%= label_tag 'payment[start_date]', "Start Date:" %><br/>
+					<%= select_datetime(start_date, prefix: "payment[start_date]",
+					  start_year: 2011, end_year: 2020)  %>
 				</div>
 				<div>
-					<%= label_tag 'end_date', "End Date:" %><br/>
-					<%= select_datetime end_date, prefix: "end_date",
-						start_year: 2011, end_year: 2020 %>
+				  <%= label_tag 'payment[end_date]', "End Date:" %><br/>
+					<%= select_datetime end_date, prefix: "payment[end_date]",
+					  start_year: 2011, end_year: 2020 %>
 				</div>
-			</div>
+				<div id="submit-container">
+					<%= submit_tag 'Preapprove' %>
+				</div>
+		  <% end -%>
 		</div>
-		<div id="submit-container">
-			<%= submit_tag 'Preapprove' %>
-		</div>
+    
+	  <div class="form-wrapper" style="float:right;">
+	    <%= form_tag payments_path do -%>
+				<%= hidden_field_tag "scenario", "Payment" %>
+				<%= hidden_field_tag "try_preapproval", "true" %>
+				<div>
+				  <%= label_tag 'stu', "Amount to Pay to Store: " %>
+				  <%= text_field_tag 'store', "$10.00" %>
+			  </div>
+			  <div id="submit-container">
+				  <%= submit_tag 'Make Payment' %>
+			  </div>	
+	    <% end -%>
+	  </div>
 	</div>
-<% end -%>
-<%= form_tag payments_path do -%>
-	<div class="form-contents">
-		<div>
-			<%= hidden_field_tag "scenario", "Payment" %>
-			<%= label_tag 'stu', "Amount to send to Store: " %>
-			<%= text_field_tag 'store', "$10.00" %>
-		</div>
-		<div id="submit-container">
-			<%= submit_tag 'Make Payment' %>
-		</div>	
-	</div>
-<% end -%>
+</section>
+
 
 <% unless @payments.empty? %>
-	<h1>Listing payments</h1>
+	<section id="payments-table">
+		<h1>Listing payments</h1>
 
-	<table class="payments">
-	  <tr>
-			<th>ID</th>
-			<th>Scenario</th>
-	    <th>Sender Email</th>
-	    <th>Total</th>
-	    <th>Status</th>
-	    <th>Timestamp</th>
-	    <th>Payment Key</th>
-	    <th>Correlation ID</th>
-	    <th></th>
-	  </tr>
-
-		<% @payments.each do |payment| %>
-	  	<tr>
-			  <td><%= payment.id %></td>
-				<td><%= payment.scenario %></td>
-		    <td><%= payment.sender_email %></td>
-		    <td><%= cents_to_currency(payment.amount) %></td>
-		    <td><%= payment.status %></td>
-		    <td><%= payment.timestamp %></td>
-				<td><%= payment.paykey %></td>
-				<td><%= payment.correlation_id %></td>
-				<td><%= link_to "details", payment_path(payment) %>
+		<table class="payments">
+		  <tr>
+				<th>ID</th>
+				<th>Scenario</th>
+		    <th>Sender Email</th>
+		    <th>Total</th>
+		    <th>Status</th>
+		    <th>Timestamp</th>
+		    <th>Payment Key</th>
+		    <th>Correlation ID</th>
+		    <th></th>
 		  </tr>
-	  <% end %>
-	
-	</table>
-<% end %>
 
+			<% @payments.each do |payment| %>
+		  	<tr>
+				  <td><%= payment.id %></td>
+					<td><%= payment.scenario %></td>
+			    <td><%= payment.sender_email %></td>
+			    <td><%= cents_to_currency(payment.amount) %></td>
+			    <td><%= payment.status %></td>
+			    <td><%= payment.timestamp %></td>
+					<td><%= payment.paykey %></td>
+					<td><%= payment.correlation_id %></td>
+					<td><%= link_to "details", payment_path(payment) %>
+			  </tr>
+		  <% end %>
+	
+		</table>
+  <% end %>
+<section>

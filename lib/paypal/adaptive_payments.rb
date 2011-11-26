@@ -70,18 +70,20 @@ module Paypal
     #   start_date = DateTime.now
     #   end_date = (DateTime.now + 1)
     #
-    def paypal_preapproval(start_date, end_date, max_per_payment,
-      max_total_payments, max_num_payments, currency)
+      
+    def paypal_preapproval(opts)
       doc = {
         returnUrl: "http://127.0.0.1:3000/payments",
         requestEnvelope: {errorLanguage: "en_US"},
-        currencyCode: currency, 
+        currencyCode: opts[:currency], 
         cancelUrl: "http://127.0.0.1:3000/payments",
-        maxTotalAmountOfAllPayments: max_total_payments,
-        maxAmountPerPayment: max_per_payment,
-        maxNumberOfPayments: max_num_payments,
-        startingDate: start_date.strftime("%FT%T%:z"),
-        endingDate: end_date.strftime("%FT%T%:z"),
+        maxTotalAmountOfAllPayments: opts[:max_total_payments],
+        maxAmountPerPayment: opts[:max_per_payment],
+        maxNumberOfPayments: opts[:max_num_payments],
+        maxNumberOfPaymentsPerPeriod: opts[:max_payments_per_period],
+        paymentPeriod: opts[:payment_period],
+        startingDate: opts[:start_date].strftime("%FT%T%:z"),
+        endingDate: opts[:end_date].strftime("%FT%T%:z"),
         displayMaxTotalAmount: "true"
       }
       request = PaypalAdaptive::Request.new("test")

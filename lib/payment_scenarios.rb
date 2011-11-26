@@ -10,6 +10,7 @@ module PaymentScenarios
   class SimplePaymentWithPaymentOptions
     
     def initialize(params)
+      params = params[:payment]
       stu = nil
       stu = params[:stu].to_money.format(:symbol => false) unless params[:stu].blank?
       @email = "stu_1321493496_per@thirdmode.com"
@@ -28,11 +29,12 @@ module PaymentScenarios
   
   class Payment
     def initialize(params)
-      compute_receivers(params)
+      compute_receivers(params[:payment])
+      @try_preapproval = params[:try_preapproval]
     end
     
     def run(payment)
-      payment.pay(@receivers)
+      payment.pay(@receivers, @try_preapproval)
     end
     
     private
@@ -58,22 +60,8 @@ module PaymentScenarios
   end
     
   class Preapproval
-    
-    def initialize(params)
-      s = params[:start_date]
-      @start_date = DateTime.new(s[:year].to_i, s[:month].to_i,
-        s[:day].to_i, s[:hour].to_i, s[:minute].to_i, 0, DateTime.now.zone)
-      s = params[:end_date]
-      @end_date = DateTime.new(s[:year].to_i, s[:month].to_i,
-        s[:day].to_i, s[:hour].to_i, s[:minute].to_i, 0, DateTime.now.zone)
-      @max_per_payment = params["max_per_payment"].to_money.format(:symbol => false)
-      @max_num_payments = params["max_num_payments"]
-      @max_total_payments = params["max_total_payments"].to_money.format(:symbol => false)       
-    end
-    
     def run(payment)
-      payment.preapproval(@start_date, @end_date, @max_per_payment, 
-        @max_total_payments, @max_num_payments)
+      payment.preapproval
     end
   end
     

@@ -10,10 +10,10 @@ class PaymentsController < ApplicationController
     @payments.each do |pmt|
       if (pmt[:status].blank? || (pmt[:status] == 'CREATED')) &&
         (pmt[:scenario] == 'Payment')
-         pmt.payment_details 
+         #pmt.payment_details 
       end
       if pmt[:scenario] == "Preapproval" && pmt[:details].blank?
-        pmt.preapproval_details
+        #pmt.preapproval_details
       end
     end
     
@@ -54,18 +54,19 @@ class PaymentsController < ApplicationController
   # POST /payments.json
   def create
    
-    scenario_name = params["scenario"] 
+    scenario_name = params[:payment][:scenario] 
     begin
       scenario = "PaymentScenarios/#{scenario_name}"
         .camelize.constantize.new(params)
   
       # Create a new Payment record and store it in the database.
-      @payment = Payment.create!(scenario: scenario_name)
+      @payment = Payment.create!(params[:payment])
       response = scenario.run(@payment)
       
       # What about the case where we are paying based up a preapproval?
       # In this case we're already done!  No need to do anything except
-      # render the index view. XXX
+      # render the index view. Also, for the Payment scenario, how do we
+      # link this payment with a preapproval to use?
       
       if response.success?
         @embedded_flow = !params["embedded_flow"].blank?
@@ -85,7 +86,7 @@ class PaymentsController < ApplicationController
       end
     rescue Exception => e
       Payment.delete(@payment.id) if @payment
-      raise 
+      #raise 
       msg = e.message
       flash[:error] = msg
       @payments = Payment.order('timestamp DESC').limit(30)

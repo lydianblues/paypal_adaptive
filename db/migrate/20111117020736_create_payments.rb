@@ -11,6 +11,16 @@ class CreatePayments < ActiveRecord::Migration
       t.datetime :timestamp
       t.string :tracking_id
       t.text :details
+      t.string :currency
+      
+      # For preapprovals
+      t.integer :max_num_payments
+      t.integer :max_total_payments
+      t.integer :max_per_payment
+      t.datetime :start_date
+      t.datetime :end_date
+      t.string :payment_period
+      t.integer :max_payments_per_period
     end
   end
 end

@@ -24,6 +24,14 @@ ActiveRecord::Schema.define(:version => 20111117020736) do
     t.datetime "timestamp"
     t.string   "tracking_id"
     t.text     "details"
+    t.string   "currency"
+    t.integer  "max_num_payments"
+    t.integer  "max_total_payments"
+    t.integer  "max_per_payment"
+    t.datetime "start_date"
+    t.datetime "end_date"
+    t.string   "payment_period"
+    t.integer  "max_payments_per_period"
   end
 
 end
