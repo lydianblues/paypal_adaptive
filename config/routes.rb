@@ -1,4 +1,6 @@
 Oahu::Application.routes.draw do
+  resources :preapprovals
+
   resources :payments
   root :to => "home#index.html"
   

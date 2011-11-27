@@ -82,8 +82,8 @@ module Paypal
         maxNumberOfPayments: opts[:max_num_payments],
         maxNumberOfPaymentsPerPeriod: opts[:max_payments_per_period],
         paymentPeriod: opts[:payment_period],
-        startingDate: opts[:start_date].strftime("%FT%T%:z"),
-        endingDate: opts[:end_date].strftime("%FT%T%:z"),
+        startingDate: opts[:start_date].localtime.iso8601, # strftime("%FT%T%:z"),
+        endingDate: opts[:end_date].localtime.iso8601, # strftime("%FT%T%:z"),
         displayMaxTotalAmount: "true"
       }
       request = PaypalAdaptive::Request.new("test")
@@ -119,7 +119,6 @@ module Paypal
         # senderEmail: "buyer_1233697850_per@thirdmode.com", --causes embedded flow to fail
         trackingId: tracking_id
       }
-      preapproval_key = "PA-2R394266SU543461B"
       doc.merge!(preapprovalKey: preapproval_key) if preapproval_key
       
       request = PaypalAdaptive::Request.new("test")

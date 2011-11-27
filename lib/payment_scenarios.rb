@@ -6,6 +6,25 @@ require 'date'
 
 module PaymentScenarios
   
+  module Utils
+    def compute_receivers(params)
+      stu = nil
+      kira = nil
+      store = nil
+      stu = params[:stu].to_money.format(:symbol => false) unless params[:stu].blank?
+      kira = params[:kira].to_money.format(:symbol => false) unless params[:kira].blank?
+      store = params[:store].to_money.format(:symbol => false) unless params[:store].blank?
+      @receivers = []
+      @receivers << {email: "stu_1321493496_per@thirdmode.com", amount: stu} if stu
+      @receivers << {email: "kira_1321493810_per@thirdmode.com", amount: kira} if kira
+      @receivers << {email: "store_1233166355_biz@thirdmode.com", amount: store} if store
+      if params[:chained]
+        @receivers[0].merge!(primary: "false")
+        @receivers[1].merge!(primary: "false")
+        @receivers[2].merge!(primary: "true")
+      end
+    end
+  end
     
   class SimplePaymentWithPaymentOptions
     
@@ -28,6 +47,8 @@ module PaymentScenarios
   end 
   
   class Payment
+    include Utils
+    
     def initialize(params)
       compute_receivers(params[:payment])
       @try_preapproval = params[:try_preapproval]
@@ -37,32 +58,27 @@ module PaymentScenarios
       payment.pay(@receivers, @try_preapproval)
     end
     
-    private
-    
-    def compute_receivers(params)
-      stu = nil
-      kira = nil
-      store = nil
-      stu = params[:stu].to_money.format(:symbol => false) unless params[:stu].blank?
-      kira = params[:kira].to_money.format(:symbol => false) unless params[:kira].blank?
-      store = params[:store].to_money.format(:symbol => false) unless params[:store].blank?
-      @receivers = []
-      @receivers << {email: "stu_1321493496_per@thirdmode.com", amount: stu} if stu
-      @receivers << {email: "kira_1321493810_per@thirdmode.com", amount: kira} if kira
-      @receivers << {email: "store_1233166355_biz@thirdmode.com", amount: store} if store
-      if params[:chained]
-        @receivers[0].merge!(primary: "false")
-        @receivers[1].merge!(primary: "false")
-        @receivers[2].merge!(primary: "true")
-      end
-    end
-    
   end
     
   class Preapproval
-    def run(payment)
-      payment.preapproval
+    def run(preapproval)
+      preapproval.preapprove
     end
   end
+  
+  class PreApprovedPayment
+    include Utils
+    
+    def initialize(params)
+      compute_receivers(params)
+      @preapproved = true
+    end
+    
+    def run(payment)
+      payment.pay(@receivers, @preapproved)
+    end
+    
+  end
+  
     
 end

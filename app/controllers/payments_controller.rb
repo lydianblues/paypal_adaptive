@@ -4,16 +4,14 @@ class PaymentsController < ApplicationController
   # GET /payments
   # GET /payments.json
   def index
-    @payments = Payment.order('timestamp DESC').limit(30)
+    @payments = Payment.order('timestamp DESC').limit(10)
+    @preapprovals = Preapproval.order('timestamp DESC').limit(10)
     @embedded_flow = false
     
     @payments.each do |pmt|
       if (pmt[:status].blank? || (pmt[:status] == 'CREATED')) &&
         (pmt[:scenario] == 'Payment')
-         #pmt.payment_details 
-      end
-      if pmt[:scenario] == "Preapproval" && pmt[:details].blank?
-        #pmt.preapproval_details
+          pmt.payment_details 
       end
     end
     
@@ -55,42 +53,37 @@ class PaymentsController < ApplicationController
   def create
    
     scenario_name = params[:payment][:scenario] 
-    begin
-      scenario = "PaymentScenarios/#{scenario_name}"
-        .camelize.constantize.new(params)
+    scenario = "PaymentScenarios/#{scenario_name}"
+      .camelize.constantize.new(params)
   
-      # Create a new Payment record and store it in the database.
-      @payment = Payment.create!(params[:payment])
-      response = scenario.run(@payment)
-      
-      # What about the case where we are paying based up a preapproval?
-      # In this case we're already done!  No need to do anything except
-      # render the index view. Also, for the Payment scenario, how do we
-      # link this payment with a preapproval to use?
-      
-      if response.success?
-        @embedded_flow = !params["embedded_flow"].blank?
-        if @embedded_flow
-          @payments = Payment.order('timestamp DESC').limit(30)
-          @paykey = response["payKey"]
-          render :action => :index
-        elsif response.approve_url
-          redirect_to response.approve_url
-        elsif response.preapprove_url
-          redirect_to response.preapprove_url
-        else
-          redirect_to payments_path
-        end
+    # Create a new Payment record and store it in the database.
+    @payment = Payment.new(params[:payment])
+    response = scenario.run(@payment)  
+    if response.success? && @payment.save
+      # Note we only save the record when PayPal returns success and
+      # the record passes our own validators.
+      @embedded_flow = !params["embedded_flow"].blank?
+      if @embedded_flow
+        @payments = Payment.order('timestamp DESC').limit(10)
+        @paykey = response["payKey"]
+        render action: "index"
       else
-        raise response["error"][0]["message"]
+        if response["paymentExecStatus"] == "COMPLETED"
+          # Preapproval was used.
+          flash.now[:notice] = "Preapproved Payment was successful."
+          @payments = Payment.order('timestamp DESC').limit(10)
+          @preapprovals = Preapproval.order('timestamp DESC').limit(10)
+          render action: "index"
+        else
+          # Payer needs to approve.
+          redirect_to response.approve_url
+        end
       end
-    rescue Exception => e
-      Payment.delete(@payment.id) if @payment
-      #raise 
-      msg = e.message
-      flash[:error] = msg
-      @payments = Payment.order('timestamp DESC').limit(30)
-      render :action => :index
+    else
+      flash.now[:error] = response.error_message unless response.success?
+      @payments = Payment.order('timestamp DESC').limit(10)
+      @preapprovals = Preapproval.order('timestamp DESC').limit(10)
+      render action: "index"
     end
 
   end

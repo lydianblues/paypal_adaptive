@@ -46,10 +46,10 @@
 			margin-bottom: 1em;
 			clear: left;
 		}
-		#payments-table {
+		#payments-table, #preapprovals-table {
 			margin-bottom:2em;
 		}
-		table.payments {
+		table.payments, table.preapprovals {
 			border-width: 1px;
 			border-spacing: 2px;
 			border-style: outset;
@@ -57,14 +57,14 @@
 			border-collapse: separate;
 			background-color: white;
 		}
-		table.payments th {
+		table.payments th, table.preapprovals th {
 			border-width: 1px;
 			padding: 0.5em;
 			border-style: inset;
 			border-color: gray;
 			background-color: white;
 		}
-		table.payments td {
+		table.payments td, table.preapprovals td {
 			border-width: 1px;
 			padding: 0.5em;
 			border-style: inset;
@@ -118,7 +118,7 @@ password <i>233697837</i>.  You may then approve or cancel the payments.
 <div class="form-wrapper">
 	<%= form_tag payments_path do -%>
 			<div>
-				<%= hidden_field_tag "scenario", "Payment" %>
+				<%= hidden_field_tag "payment[scenario]", "Payment" %>
 				<%= label_tag 'stu', "Amount to send to Stu: " %>
 				<%= text_field_tag 'stu', "$10.00" %>
 			</div>
@@ -153,7 +153,7 @@ password <i>233697837</i>.  You may then approve or cancel the payments.
 	<div class="form-wrapper">
 	  <%= form_tag payments_path do -%>
 			<div>
-				<%= hidden_field_tag "scenario", "Payment" %>
+				<%= hidden_field_tag "payment[scenario]", "Payment" %>
 				<%= hidden_field_tag "chained", "true" %>
 				<%= label_tag 'stu', "Amount to send to Stu: " %>
 				<%= text_field_tag 'stu', "$10.00" %>
@@ -183,46 +183,46 @@ cancel the preapproval.
 	</div>
 	<div id="double-forms">
 	  <div class="form-wrapper">
-		  <%= form_tag payments_path do -%>
-				<%= hidden_field_tag "payment[scenario]", "Preapproval" %>
+		  <%= form_tag preapprovals_path do -%>
+				<%= hidden_field_tag "preapproval[scenario]", "Preapproval" %>
 				<div>
-				  <%= label_tag 'payment[max_num_payments]', "Max Number of Payments: " %>
-				  <%= text_field_tag 'payment[max_num_payments]', "1" %>
+				  <%= label_tag 'preapproval[max_num_payments]', "Max Number of Payments: " %>
+				  <%= text_field_tag 'preapproval[max_num_payments]', "1" %>
 				</div>
 				<div>
-				  <%= label_tag 'payment[max_total_payments]', "Max Total of all Payments: " %>
-				  <%= text_field_tag 'payment[max_total_payments]', "$100.00" %>
+				  <%= label_tag 'preapproval[max_total_payments]', "Max Total of all Payments: " %>
+				  <%= text_field_tag 'preapproval[max_total_payments]', "$100.00" %>
 				</div>
 				<div>
-				  <%= label_tag 'payment[max_per_payment]', "Max Per Payment: " %>
-				  <%= text_field_tag 'payment[max_per_payment]', "$10.00" %>
+				  <%= label_tag 'preapproval[max_per_payment]', "Max Per Payment: " %>
+				  <%= text_field_tag 'preapproval[max_per_payment]', "$10.00" %>
 				</div>
 				<div>
 					<% pay_periods = %w(NO_PERIOD_SPECIFIED DAILY WEEKLY BIWEEKLY
 			      SEMIMONTHLY MONTHLY ANNUALLY) %>
 			    <section style="float:left;">
-				    <%= label_tag 'payment[payment_period]', "Payment Period: " %>
+				    <%= label_tag 'preapproval[payment_period]', "Payment Period: " %>
 				  </section>
 					<section style="float:right;">
-				    <%= select_tag 'payment[payment_period]',
+				    <%= select_tag 'preapproval[payment_period]',
 				      options_from_collection_for_select(pay_periods, :to_s, :to_s) %>
 				   </section>
 				</div>
 				<div>
-				  <%= label_tag 'payment[max_payments_per_period]', "Max Pmts Per Period: " %>
-				  <%= text_field_tag 'payment[max_payments_per_period]', "1" %>
+				  <%= label_tag 'preapproval[max_payments_per_period]', "Max Pmts Per Period: " %>
+				  <%= text_field_tag 'preapproval[max_payments_per_period]', "1" %>
 				</div>
 		
 				<% start_date = DateTime.now %>
 				<% end_date = start_date + 1%>
 				<div>
-				  <%= label_tag 'payment[start_date]', "Start Date:" %><br/>
-					<%= select_datetime(start_date, prefix: "payment[start_date]",
+				  <%= label_tag 'preapproval[start_date]', "Start Date:" %><br/>
+					<%= select_datetime(start_date, prefix: "preapproval[start_date]",
 					  start_year: 2011, end_year: 2020)  %>
 				</div>
 				<div>
-				  <%= label_tag 'payment[end_date]', "End Date:" %><br/>
-					<%= select_datetime end_date, prefix: "payment[end_date]",
+				  <%= label_tag 'preapproval[end_date]', "End Date:" %><br/>
+					<%= select_datetime end_date, prefix: "preapproval[end_date]",
 					  start_year: 2011, end_year: 2020 %>
 				</div>
 				<div id="submit-container">
@@ -233,15 +233,14 @@ cancel the preapproval.
     
 	  <div class="form-wrapper" style="float:right;">
 	    <%= form_tag payments_path do -%>
-				<%= hidden_field_tag "scenario", "Payment" %>
-				<%= hidden_field_tag "try_preapproval", "true" %>
+				<%= hidden_field_tag "payment[scenario]", "PreApprovedPayment" %>
 				<div>
-				  <%= label_tag 'stu', "Amount to Pay to Store: " %>
-				  <%= text_field_tag 'store', "$10.00" %>
-			  </div>
-			  <div id="submit-container">
-				  <%= submit_tag 'Make Payment' %>
-			  </div>	
+					<%= label_tag 'store', "Amount to pay to Store: " %>
+					<%= text_field_tag 'store', "$10.00" %>
+				</div>
+				<div id="submit-container">
+					<%= submit_tag 'Make Payment' %>
+				</div>
 	    <% end -%>
 	  </div>
 	</div>
@@ -261,7 +260,6 @@ cancel the preapproval.
 		    <th>Status</th>
 		    <th>Timestamp</th>
 		    <th>Payment Key</th>
-		    <th>Correlation ID</th>
 		    <th></th>
 		  </tr>
 
@@ -272,13 +270,37 @@ cancel the preapproval.
 			    <td><%= payment.sender_email %></td>
 			    <td><%= cents_to_currency(payment.amount) %></td>
 			    <td><%= payment.status %></td>
-			    <td><%= payment.timestamp %></td>
+			    <td><%= payment.timestamp.localtime if payment.timestamp %></td>
 					<td><%= payment.paykey %></td>
-					<td><%= payment.correlation_id %></td>
 					<td><%= link_to "details", payment_path(payment) %>
 			  </tr>
 		  <% end %>
 	
 		</table>
   <% end %>
+	<% unless @preapprovals.empty? %>
+		<section id="preapprovals-table">
+			<h1>Listing Preapprovals</h1>
+
+			<table class="preapprovals">
+			  <tr>
+					<th>ID</th>
+			    <th>Status</th>
+			    <th>Timestamp</th>
+			    <th>Preapproval Key</th>
+			    <th></th>
+			  </tr>
+
+				<% @preapprovals.each do |preapproval| %>
+			  	<tr>
+					  <td><%= preapproval.id %></td>
+				    <td><%= preapproval.status %></td>
+				    <td><%= preapproval.timestamp.localtime %></td>
+						<td><%= preapproval.preapproval_key %></td>
+						<td><%= link_to "details", preapproval_path(preapproval) %>
+				  </tr>
+			  <% end %>
+
+			</table>
+	  <% end %>
 <section>
