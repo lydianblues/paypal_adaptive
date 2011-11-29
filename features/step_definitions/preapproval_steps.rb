@@ -1,12 +1,5 @@
 When /^I create a preapproval with default options$/ do
 
-  # get_via_redirect payments_path
-  # <input id="preapproval_max_total_payments" name="preapproval[max_total_payments]" type="text" value="$100.00" />
-  # assert_select "[name=?]", "preapproval[max_total_payments]", "$100.00"
-  #assert_select "a[href=?]", new_movie_path, "Add Movie"
-  
-  Capybara.current_driver = :selenium
-  
   # Log in to the PayPal developer site.
   visit("http://developer.paypal.com")
   fill_in 'Email Address', :with => "mbs@thirdmode.com"
@@ -16,6 +9,7 @@ When /^I create a preapproval with default options$/ do
   
   # Go to the Payments page of the demo app.
   visit(payments_path)
+  sleep(4)
   click_button('Preapprove')
   
   # On the PayPal site, we have a login, so click to get to the 
@@ -28,9 +22,10 @@ When /^I create a preapproval with default options$/ do
   find(:css, "#submitLogin").click
   
   # Approve the preapproval.
- 
   find(:css, "[value=Approve]").click 
   page.should have_content("successfully signed up for preapproved payments")
+  
+  # Click the link to redirect to Payments#index
   find(:css, "[value=Return]").click
   
   # Now we're back on the Payments Page.
@@ -38,9 +33,5 @@ When /^I create a preapproval with default options$/ do
   
   # Find the preapproval key on this page.
   puts "Preapproval key is " + find(:css, "table.preapprovals tr:nth-child(2) td:nth-child(4)").text
-  find(:css, "table.preapprovals tr:nth-child(2) td:nth-child(5)").click
-  save_and_open_page
-  page.should have_content("Success")
   
-  Capybara.use_default_driver
 end
