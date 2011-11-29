@@ -246,7 +246,6 @@ cancel the preapproval.
 	</div>
 </section>
 
-
 <% unless @payments.empty? %>
 	<section id="payments-table">
 		<h1>Listing payments</h1>
@@ -277,30 +276,32 @@ cancel the preapproval.
 		  <% end %>
 	
 		</table>
-  <% end %>
-	<% unless @preapprovals.empty? %>
-		<section id="preapprovals-table">
-			<h1>Listing Preapprovals</h1>
+	</section>
+<% end %>
+<% unless @preapprovals.empty? %>
+	<section id="preapprovals-table">
+		<h1>Listing Preapprovals</h1>
 
-			<table class="preapprovals">
-			  <tr>
-					<th>ID</th>
-			    <th>Status</th>
-			    <th>Timestamp</th>
-			    <th>Preapproval Key</th>
-			    <th></th>
+		<table class="preapprovals">
+		  <tr>
+				<th>ID</th>
+		    <th>Status</th>
+		    <th>Timestamp</th>
+		    <th>Preapproval Key</th>
+		    <th></th>
+		  </tr>
+
+			<% @preapprovals.each_with_index do |preapproval, i| %>
+		  	<tr>
+				  <td><%= preapproval.id %></td>
+			    <td><%= preapproval.status %></td>
+			    <td><%= preapproval.timestamp.localtime %></td>
+					<td><%= preapproval.preapproval_key %></td>
+					<td><%= link_to "details_#{i}", preapproval_path(preapproval) %>
 			  </tr>
+		  <% end %>
 
-				<% @preapprovals.each do |preapproval| %>
-			  	<tr>
-					  <td><%= preapproval.id %></td>
-				    <td><%= preapproval.status %></td>
-				    <td><%= preapproval.timestamp.localtime %></td>
-						<td><%= preapproval.preapproval_key %></td>
-						<td><%= link_to "details", preapproval_path(preapproval) %>
-				  </tr>
-			  <% end %>
+		</table>
+	<section>
+<% end %>
 
-			</table>
-	  <% end %>
-<section>
