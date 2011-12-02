@@ -1,5 +1,3 @@
-require 'paypal/adaptive_payments'
-
 #
 # In this file, the various methods are wrappers for PayPal methods.
 # The wrappers are needed because they can get and set the state of
@@ -8,7 +6,7 @@ require 'paypal/adaptive_payments'
 #
 class Payment < ActiveRecord::Base
   
-  include Paypal::AdaptivePayments
+  include Paypal::AdaptiveAdapter
   
   after_initialize :init_payment
   

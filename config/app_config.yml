@@ -1,0 +1,49 @@
+common: &COMMON
+  paypal_api_mode: "sandbox"
+  paypal_api_username: "store_1233166355_biz_api1.thirdmode.com"
+  paypal_api_password: "ASTAK9LM53T7Z67R"
+  paypal_api_signature: "AwxegZkzaWUo3THI-xmZGuDkRQFkAFIYbjWj0Q1F6lb-5GEonTuxt.7W"
+  paypal_api_secret: s5a8l4a9
+  paypal_default_payment_action: "Authorization" # or "Sale"
+  paypal_standard_url: "https://www.sandbox.paypal.com/cgi-bin/webscr"
+  paypal_receiver_email: "store_1233166355_biz@thirdmode.com"
+  paypal_business: "store_1233166355_biz@thirdmode.com"
+  paypal_cert_id: MSFGJR9NCBBR6
+  paypal_ipn_url: "https://phobos.thirdmode.com/paypal/notify"
+  paypal_test_ipn: true
+  paypal_callback_url: "https://phobos.thirdmode.com/paypal/update"
+  paypal_return_url: "https://phobos.thirdmode.com/paypal/express/confirm"
+  paypal_cancel_url: "https://phobos.thirdmode.com/paypal/express/cancel"
+  paypal_shopping_url: "https://phobos.thirdmode.com/paypal/standard/continue"
+  paypal_buyer_username: "buyer_1233697850_per@thirdmode.com"
+  paypal_buyer_password: "233697837"
+  paypal_application_id: "APP-80W284485P519543T"
+
+  application_certificate: "/etc/pki/tls/certs/thirdmode.com.crt"
+  application_key: "/etc/pki/tls/private/thirdmode.key"
+
+  braintree_url: "https://secure.braintreepaymentgateway.com/api/transact.php"
+  braintree_key: "UVgCejU48ANga4mKF77WFXfm2yUve76W"
+  braintree_key_id: "776320"
+  braintree_username: "testapi"
+  braintree_password: "password1"
+  braintree_direct_sale: "Checkout with Braintree Direct Post"
+
+  ups_access_key: 6C5D1F0A80EEC640
+  ups_login: lydianblues
+  ups_password: aviva0527
+
+development:
+  <<: *COMMON
+  paypal_base_url: "https://www.sandbox.paypal.com"
+  paypal_api_base_url: "https://svcs.sandbox.paypal.com"
+
+test:
+  <<: *COMMON
+  paypal_base_url: "https://www.sandbox.paypal.com"
+  paypal_api_base_url: "https://svcs.sandbox.paypal.com"
+
+production:
+  <<: *COMMON
+  paypal_base_url: "https://www.paypal.com"
+  paypal_api_base_url: "https://svcs.paypal.com"

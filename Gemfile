@@ -2,7 +2,7 @@ source 'http://rubygems.org'
 
 gem 'rails', '3.1.1'
 
-gem 'paypal_adaptive', :path => '/opt/gems/paypal_adaptive'
+gem 'paypal', :path => '/opt/gems/paypal'
 
 # Bundle edge Rails instead:
 # gem 'rails',     :git => 'git://github.com/rails/rails.git'

@@ -1,8 +1,6 @@
-require 'paypal/adaptive_payments'
-
 class Preapproval < ActiveRecord::Base
   
-  include Paypal::AdaptivePayments
+  include Paypal::AdaptiveAdapter
   
   before_save :check_defaults
   
